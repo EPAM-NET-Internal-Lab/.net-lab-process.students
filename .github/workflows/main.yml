@@ -1,0 +1,25 @@
+name: CI
+on:
+  pull_request:
+    branches: [ master, develop ]
+jobs:
+  build:
+    strategy:
+      matrix:
+        configuration: [Debug, Release] 
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v1
+        name: Checkout Code     
+      - name: setup-msbuild
+        uses: microsoft/setup-msbuild@v1.0.2    
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v1.0.2   
+      - name: Setup VSTest.exe
+        uses: Malcolmnixon/Setup-VSTest@v3    
+      - name: Restore NuGet Packages
+        run: nuget restore TicketManagement.sln 
+      - name: Build
+        run: msbuild TicketManagement.sln /p:Configuration=${{ matrix.configuration }} 
+      - name: Unit tests
+        run: vstest.console **\*.UnitTests.dll
