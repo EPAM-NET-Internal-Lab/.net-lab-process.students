@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using UserApi.Dto;
 using UserApi.Services;
@@ -13,8 +15,10 @@ namespace UserApi.Controllers
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly JwtTokenService _jwtTokenService;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
         public UsersController(
+            RoleManager<IdentityRole> roleManager,
             SignInManager<IdentityUser> signInManager,
             UserManager<IdentityUser> userManager,
             JwtTokenService jwtTokenService)
@@ -22,6 +26,7 @@ namespace UserApi.Controllers
             _signInManager = signInManager;
             _userManager = userManager;
             _jwtTokenService = jwtTokenService;
+            _roleManager = roleManager;
         }
 
         [HttpPost("register")]
@@ -35,7 +40,15 @@ namespace UserApi.Controllers
             var result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
             {
-                return Ok(_jwtTokenService.GetToken(user));
+                // Example of additng the role claim to the user
+                if (model.Login == "admin")
+                {
+                    await CreateAdminRoleIfNotExists();
+                    await _userManager.AddToRoleAsync(user, "Admin");
+                }
+
+                var roles = await _userManager.GetRolesAsync(user);
+                return Ok(_jwtTokenService.GetToken(user, roles));
             }
 
             return BadRequest(result.Errors);
@@ -56,16 +69,25 @@ namespace UserApi.Controllers
             if (result.Succeeded)
             {
                 var user = await _userManager.FindByNameAsync(model.Login);
-                return Ok(_jwtTokenService.GetToken(user));
+                return Ok(_jwtTokenService.GetToken(user, new List<string>()));
             }
 
             return Forbid();
         }
 
+        [AllowAnonymous]
         [HttpGet("validate")]
         public IActionResult Validate(string token)
         {
             return _jwtTokenService.ValidateToken(token) ? Ok() : (IActionResult)Forbid();
+        }
+
+        private async Task CreateAdminRoleIfNotExists()
+        {
+            if (!await _roleManager.RoleExistsAsync("Admin"))
+            {
+                await _roleManager.CreateAsync(new IdentityRole("Admin"));
+            }
         }
     }
 }
