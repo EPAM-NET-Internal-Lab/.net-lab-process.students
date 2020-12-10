@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using UserApi.Settings;
@@ -20,12 +21,15 @@ namespace UserApi.Services
             _settings = options.Value;
         }
 
-        public string GetToken(IdentityUser user)
+        public string GetToken(IdentityUser user, IList<string> roles)
         {
+            // Adding claims to the list of all claims inside the JWT token.
+            var roleClaims = roles.Select(role => new Claim(ClaimTypes.Role, role));
             var userClaims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName)
             };
+            userClaims.AddRange(roleClaims);
             var jwt = new JwtSecurityToken(
                 issuer: _settings.JwtIssuer,
                 audience: _settings.JwtAudience,
