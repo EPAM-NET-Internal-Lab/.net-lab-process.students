@@ -28,7 +28,7 @@ namespace Delegates.Demo02
                 return;
             }
 
-            var delType = Type.GetType(args[0]);
+            var delType = Type.GetType($"Delegates.Demo02.{args[0]}");
             if (delType == null)
             {
                 Console.WriteLine("Invalid delType argument: " + args[0]);
