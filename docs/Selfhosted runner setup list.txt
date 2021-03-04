@@ -1,0 +1,11 @@
+Invoke-WebRequest -Uri https://githubassets.azureedge.net/runners/2.161.0/actions-runner-win-x64-2.161.0.zip -OutFile actions-runner-win-x64-2.161.0.zip; Add-Type -AssemblyName System.IO.Compression.FileSystem ; [System.IO.Compression.ZipFile]::ExtractToDirectory("$PWD/actions-runner-win-x64-2.161.0.zip", "$PWD"); ./config.cmd --url <repo_url> --token <PAT> --agent <runner_name> --work <work_dir> --runasservice
+MS SQL SERVER
+GIT
+https://chocolatey.org/packages/chocolatey-visualstudio.extension#versionhistory
+https://chocolatey.org/packages/dotnetfx
+https://chocolatey.org/packages/visualstudio-installer
+https://chocolatey.org/packages/visualstudio2019buildtools#dependencies
+https://chocolatey.org/packages/sqlpackage#dependencies
+https://chocolatey.org/packages/vswhere
+
+VS STUDIO FOR VSTEST.CONSOLE.EXE
